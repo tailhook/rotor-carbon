@@ -1,0 +1,119 @@
+commands:
+
+  make: !Command
+    description: Build the library
+    container: ubuntu
+    run: [cargo, build]
+
+  cargo: !Command
+    description: Run arbitrary cargo command
+    container: ubuntu
+    run: [cargo]
+
+  init_graphite: !Command
+    description: Init graphite-web
+    container: graphite
+    work-dir: /opt/graphite/webapp/graphite
+    run: |
+      python manage.py syncdb --noinput
+      mkdir -p /work/tmp/log/webapp
+
+  run: !Supervise
+    description: "Runs carbon with graphite-web fed with random values
+                 (prerequisite: `init_graphite`)"
+    children:
+      rnd: !Command
+        container: ubuntu
+        run: |
+          sleep 1
+          cargo run --example feed_random_threaded
+      carbon: !Command
+        container: graphite
+        work-dir: /opt/graphite
+        run:
+        - ./bin/carbon-cache.py
+        - start
+        - --debug
+
+      graphite-web: &graphite !Command
+        container: graphite
+        work-dir: /opt/graphite/webapp/graphite
+        run:
+        - python
+        - manage.py
+        - runserver
+
+containers:
+
+  ubuntu:
+    setup:
+    - !Ubuntu trusty
+    - !UbuntuUniverse
+    - !Install [make, checkinstall, wget, ca-certificates, libssl-dev, git,
+                build-essential]
+
+    - !TarInstall
+      url: "http://static.rust-lang.org/dist/rust-1.6.0-x86_64-unknown-linux-gnu.tar.gz"
+      script: "./install.sh --prefix=/usr \
+                --components=rustc,rust-std-x86_64-unknown-linux-gnu,cargo"
+
+    environ:
+      HOME: /work/target
+      PATH: /bin:/usr/bin:/usr/local/bin
+      NODE_PATH: /usr/local/lib/node_modules
+
+  graphite:
+    setup:
+    - !Alpine v3.3
+    - !Install [tzdata]
+    - !PipConfig { dependencies: true }
+    - !Py2Install
+      - twisted<12.0
+    - !TarInstall
+      url: https://launchpad.net/graphite/0.9/0.9.10/+download/whisper-0.9.10.tar.gz
+      script: python setup.py install
+    - !TarInstall
+      url: https://launchpad.net/graphite/0.9/0.9.10/+download/carbon-0.9.10.tar.gz
+      script: python setup.py install
+
+    - !EnsureDir /var/lib/carbon
+    - !EnsureDir /opt/graphite/conf
+    - !Copy
+      source: /work/graphite/carbon.conf
+      path: /opt/graphite/conf/carbon.conf
+    - !Copy
+      source: /work/graphite/storage-schemas.conf
+      path: /opt/graphite/conf/storage-schemas.conf
+
+    - !Install [py-cairo, rrdtool-dev]
+    - !Install
+      - ttf-dejavu
+      - ttf-liberation
+      - ttf-ubuntu-font-family
+    - !Py2Install
+      - django<1.6
+      - django-tagging<0.4
+      - twisted<12.0
+      - fields
+      - pyparsing
+      - rrdtool
+      - whitenoise
+      - python-memcached
+      - pytz
+    - !TarInstall
+      url: https://launchpad.net/graphite/0.9/0.9.10/+download/graphite-web-0.9.10.tar.gz
+      script: |
+        python check-dependencies.py
+        python setup.py install
+    - !Copy
+      source: /work/graphite/local_settings.py
+      path: /opt/graphite/webapp/graphite/local_settings.py
+    - !EnsureDir /opt/graphite/storage
+    - !Sh |
+        echo 'SECRET_KEY = "fails in local settings :("' \
+          >> /opt/graphite/webapp/graphite/settings.py
+    auto-clean: true
+    volumes:
+      /opt/graphite/storage: !BindRW /work/tmp
+
+
