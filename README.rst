@@ -6,6 +6,7 @@ A client protocol implementation for carbon_ (and graphite)
 asynchronous layer on top of rotor_.
 
 :Status: Pre-alpha
+:Documentation: http://tailhook.github.io/rotor-carbon
 
 To Do:
 

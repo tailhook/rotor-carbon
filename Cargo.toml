@@ -7,6 +7,7 @@ license = "MIT/Apache-2.0"
 readme = "README.rst"
 keywords = ["mio", "carbon", "graphite", "rotor", "metrics"]
 homepage = "http://github.com/tailhook/rotor-carbon"
+documentation = "http://tailhook.github.io/rotor-carbon"
 version = "0.1.0"
 authors = ["paul@colomiets.name"]
 
