@@ -6,7 +6,6 @@ extern crate rand;
 struct Context;
 
 use std::thread;
-use std::sync::mpsc::channel;
 use std::time::Duration;
 
 use rand::{thread_rng, Rng};
@@ -30,23 +29,24 @@ fn main() {
         ap.parse_args_or_exit();
     }
 
-    let (tx, rx) = channel();
+    let mut sink_cell = None;
+    let mut loop_creator = rotor::Loop::new(
+        &rotor::Config::new()).unwrap();
+    loop_creator.add_machine_with(|scope| {
+        let (fsm, sink) = connect_ip(
+            &format!("{}:{}", host, port).parse().unwrap(),
+            scope).unwrap();
+        sink_cell = Some(sink);
+        Ok(fsm)
+    }).unwrap();
+    let sink = sink_cell.unwrap();
+
     // We create a loop in the thread. It's simpler to use for demo.
     // But it's perfectly okay to add rotor-carbon thing to your normal
     // event loop
     thread::spawn(move || {
-        let mut loop_creator = rotor::Loop::new(
-            &rotor::Config::new()).unwrap();
-        loop_creator.add_machine_with(|scope| {
-            let (fsm, sink) = connect_ip(
-                &format!("{}:{}", host, port).parse().unwrap(),
-                scope).unwrap();
-            tx.send(sink).unwrap();
-            Ok(fsm)
-        }).unwrap();
         loop_creator.run(Context).unwrap();
     });
-    let sink = {rx}.recv().unwrap();
 
     let mut rng = thread_rng();
     loop {

@@ -25,6 +25,8 @@ struct Internal {
 /// A state machine object, just add in to the loop
 pub struct Fsm<C>(Arc<Mutex<Internal>>, PhantomData<*const C>);
 
+unsafe impl<C> Send for Fsm<C> {}
+
 /// This is a wrapper around the machinery to send data
 ///
 /// Use ``sink.sender()`` go to get an actual object you may send to
