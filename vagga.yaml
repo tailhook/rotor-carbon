@@ -30,11 +30,9 @@ commands:
       carbon: !Command
         container: graphite
         work-dir: /opt/graphite
-        run:
-        - ./bin/carbon-cache.py
-        - start
-        - --debug
-
+        run: |
+          rm /work/tmp/carbon-cache-a.pid || true
+          ./bin/carbon-cache.py start --debug
       graphite-web: &graphite !Command
         container: graphite
         work-dir: /opt/graphite/webapp/graphite
