@@ -2,6 +2,7 @@ extern crate rotor;
 extern crate netbuf;
 extern crate void;
 extern crate time;
+extern crate rand;
 
 mod sink;
 mod fsm;
@@ -13,11 +14,10 @@ use std::net::SocketAddr;
 use std::sync::{Arc, Mutex, MutexGuard};
 
 use rotor::{GenericScope, Notifier};
-use rotor::mio::tcp::TcpStream;
-
 
 struct Internal {
-    socket: TcpStream,
+    state: fsm::State,
+    address: SocketAddr,
     buffer: netbuf::Buf,
     notify: Notifier,
 }
@@ -48,15 +48,10 @@ pub struct Sender<'a>(MutexGuard<'a, Internal>, bool);
 ///
 /// The method is here while rotor-dns is not matured yet. The better way
 /// would be to use dns resolving.
-pub fn connect_ip<S: GenericScope, C>(addr: &SocketAddr, scope: &mut S)
+pub fn connect_ip<S: GenericScope, C>(addr: SocketAddr, scope: &mut S)
     -> Result<(Fsm<C>, Sink), io::Error>
 {
-    let conn = try!(TcpStream::connect(addr));
-    let arc = Arc::new(Mutex::new(Internal {
-        socket: conn,
-        buffer: netbuf::Buf::new(),
-        notify: scope.notifier(),
-        }));
+    let arc = Arc::new(Mutex::new(try!(Internal::new(addr, scope))));
     Ok((Fsm(arc.clone(), PhantomData), Sink(arc)))
 }
 

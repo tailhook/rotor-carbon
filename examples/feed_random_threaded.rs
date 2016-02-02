@@ -34,7 +34,7 @@ fn main() {
         &rotor::Config::new()).unwrap();
     loop_creator.add_machine_with(|scope| {
         let (fsm, sink) = connect_ip(
-            &format!("{}:{}", host, port).parse().unwrap(),
+            format!("{}:{}", host, port).parse().unwrap(),
             scope).unwrap();
         sink_cell = Some(sink);
         Ok(fsm)
