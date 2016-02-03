@@ -10,10 +10,10 @@ asynchronous layer on top of rotor_.
 
 To Do:
 
-* [x] basic protocol implementation
-* [ ] format!-style API
-* [ ] reconnection of the client
-* [ ] name resolving (requires rotor-dns_ to mature)
+* ☑ basic protocol implementation
+* ☐ format!-style API
+* ☑ reconnection of the client
+* ☐ name resolving (requires rotor-dns_ to mature)
 
 
 .. _rotor: http://github.com/tailhook/rotor
