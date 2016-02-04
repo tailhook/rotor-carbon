@@ -1,6 +1,7 @@
 extern crate argparse;
 extern crate rotor;
 extern crate rotor_carbon;
+extern crate rotor_tools;
 extern crate rand;
 
 struct Context;
@@ -10,7 +11,8 @@ use std::time::Duration;
 
 use rand::{thread_rng, Rng};
 use argparse::{ArgumentParser, Store};
-use rotor_carbon::connect_ip;
+use rotor_carbon::{connect_ip};
+use rotor_tools::loop_ext::LoopExt;
 
 
 fn main() {
@@ -29,17 +31,13 @@ fn main() {
         ap.parse_args_or_exit();
     }
 
-    let mut sink_cell = None;
     let mut loop_creator = rotor::Loop::new(
         &rotor::Config::new()).unwrap();
-    loop_creator.add_machine_with(|scope| {
-        let (fsm, sink) = connect_ip(
+    let sink = loop_creator.add_and_fetch(|x| x, |scope| {
+        connect_ip(
             format!("{}:{}", host, port).parse().unwrap(),
-            scope).unwrap();
-        sink_cell = Some(sink);
-        Ok(fsm)
+            scope)
     }).unwrap();
-    let sink = sink_cell.unwrap();
 
     // We create a loop in the thread. It's simpler to use for demo.
     // But it's perfectly okay to add rotor-carbon thing to your normal

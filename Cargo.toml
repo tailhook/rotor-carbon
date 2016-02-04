@@ -25,6 +25,7 @@ num = "0.1.30"
 [dev-dependencies]
 argparse = "0.2.1"
 rand = "0.3.13"
+rotor-tools = "0.2.0"
 
 [lib]
 name = "rotor_carbon"
