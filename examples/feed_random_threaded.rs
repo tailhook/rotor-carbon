@@ -53,9 +53,9 @@ fn main() {
         thread::sleep(Duration::from_secs(1));
         {
             let mut sender = sink.sender();
-            sender.add_int("test.localhost.random.value1",
+            sender.add_value("test.localhost.random.value1",
                 rng.gen_range(0, 200));
-            sender.add_int("test.localhost.random.value2",
+            sender.add_value("test.localhost.random.value2",
                 rng.gen_range(100, 500));
         }
     }

@@ -2,37 +2,29 @@ use std::io::Write;
 use std::fmt::Display;
 
 use time::get_time;
+use num::Num;
 
 use {Sender};
 
 impl<'a> Sender<'a> {
-    /// Send a generic convertible to i64
-    pub fn add_int<V, I=i64>(&mut self, name: V, value: I)
-        where V: Display, I: Into<i64>
+    /// Send a generic number with current timestamp
+    pub fn add_value<N, V=i64>(&mut self, name: N, value: V)
+        where N: Display, V: Num + Display
     {
         let ts = get_time().sec;
-        let val = value.into();
-        writeln!(self.0.buffer, "{} {} {}", name, val, ts).unwrap();
-    }
-    /// The special case for u64, as it's the only type doesn't fit in i64
-    pub fn add_u64<V>(&mut self, name: V, value: u64)
-        where V: Display
-    {
-        let ts = get_time().sec;
+        let offset = self.0.buffer.len();
         writeln!(self.0.buffer, "{} {} {}", name, value, ts).unwrap();
+        debug_assert!(!self.0.buffer[offset..self.0.buffer.len()-1]
+                       .contains(&b'\n'));
     }
-    /// Send a generic convertible to i64 with a timestamp
-    pub fn add_int_at<V, I=i64>(&mut self, name: V, value: I, ts: u64)
-        where V: Display, I: Into<i64>
+    /// Send a generic number with specific timestamp
+    pub fn add_value_at<N, V=i64>(&mut self, name: N, value: V, ts: u64)
+        where N: Display, V: Num + Display
     {
-        let val = value.into();
-        writeln!(self.0.buffer, "{} {} {}", name, val, ts).unwrap();
-    }
-    /// Send an u64 with a timestamp
-    pub fn add_u64_at<V>(&mut self, name: V, value: u64, ts: u64)
-        where V: Display
-    {
+        let offset = self.0.buffer.len();
         writeln!(self.0.buffer, "{} {} {}", name, value, ts).unwrap();
+        debug_assert!(!self.0.buffer[offset..self.0.buffer.len()-1]
+                       .contains(&b'\n'));
     }
 }
 

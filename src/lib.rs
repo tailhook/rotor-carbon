@@ -36,6 +36,7 @@ extern crate netbuf;
 extern crate void;
 extern crate time;
 extern crate rand;
+extern crate num;
 
 mod sink;
 mod fsm;
