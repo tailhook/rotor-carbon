@@ -1,3 +1,27 @@
+//! The library allows to send data to carbon (also known as graphite)
+//!
+//! #Example
+//!
+//! ```
+//! extern crate rotor;
+//! extern crate rotor_tools;
+//!
+//! use rotor_tools::loop_ext::LoopExt;
+//!
+//! let loopinst = rotor::Loop::new(&rotor::Config::new()).instantiate(());
+//! let sink = loopinst.add_and_fetch(|scope| {
+//!     connect_ip("127.0.0.1:2003".parse().unwrap(), scope)
+//! }).unwrap();
+//!
+//! loopinst.run().unwrap()
+//!
+//! // Then somewhere else:
+//!
+//! { // Note sender keeps lock on buffer for it's lifetime
+//!     let snd = sink.sender();
+//!     snd.add_u64("some.value", 1234);
+//! }
+//! ```
 extern crate rotor;
 extern crate netbuf;
 extern crate void;
