@@ -11,7 +11,7 @@ asynchronous layer on top of rotor_.
 To Do:
 
 * ☑ basic protocol implementation
-* ☐ format!-style API
+* ☑ format!-style API
 * ☑ reconnection of the client
 * ☐ name resolving (requires rotor-dns_ to mature)
 
