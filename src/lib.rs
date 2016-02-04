@@ -18,10 +18,19 @@
 //! // Then somewhere else:
 //!
 //! { // Note sender keeps lock on buffer for it's lifetime
-//!     let snd = sink.sender();
-//!     snd.add_u64("some.value", 1234);
+//!     let sender = sink.sender();
+//!     sender.add_u64("some.value", 1234);
 //! }
 //! ```
+//!
+//! If you need to format the metric name, use `format_args!` instead of
+//! `format!` as the former does not preallocate a buffer:
+//! ```
+//! snd.add_int_at(
+//!     format_args!("servers.{}.metrics.{}", hostname, metric),
+//!     metric_value, timestamp);
+//! ```
+//!
 extern crate rotor;
 extern crate netbuf;
 extern crate void;
