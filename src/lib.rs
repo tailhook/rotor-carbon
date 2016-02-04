@@ -2,7 +2,7 @@
 //!
 //! #Example
 //!
-//! ```
+//! ```ignore
 //! extern crate rotor;
 //! extern crate rotor_tools;
 //!
@@ -13,7 +13,7 @@
 //!     connect_ip("127.0.0.1:2003".parse().unwrap(), scope)
 //! }).unwrap();
 //!
-//! loopinst.run().unwrap()
+//! loopinst.run().unwrap();
 //!
 //! // Then somewhere else:
 //!
