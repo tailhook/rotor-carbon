@@ -32,34 +32,26 @@
 //! ```
 //!
 extern crate rotor;
-extern crate netbuf;
-extern crate void;
+extern crate rotor_stream;
+extern crate rotor_tools;
 extern crate time;
-extern crate rand;
 extern crate num;
 
 mod sink;
-mod fsm;
 mod sender;
+mod proto;
 
-use std::io;
-use std::marker::PhantomData;
 use std::net::SocketAddr;
 use std::sync::{Arc, Mutex, MutexGuard};
 
-use rotor::{GenericScope, Notifier};
+use rotor::{GenericScope, Notifier, Void, Response};
+use rotor::mio::tcp::TcpStream;
+use rotor_stream::{Persistent, ActiveStream};
+use rotor_tools::sync::{Mutexed};
 
-struct Internal {
-    state: fsm::State,
-    address: SocketAddr,
-    buffer: netbuf::Buf,
-    notify: Notifier,
-}
 
 /// A state machine object, just add in to the loop
-pub struct Fsm<C>(Arc<Mutex<Internal>>, PhantomData<*const C>);
-
-unsafe impl<C> Send for Fsm<C> {}
+pub type Fsm<C, S> = Mutexed<Persistent<proto::CarbonProto<C, S>>>;
 
 /// This is a wrapper around the machinery to send data
 ///
@@ -69,23 +61,30 @@ unsafe impl<C> Send for Fsm<C> {}
 /// send data, until sender is dropped. This is useful for sending data in
 /// single bulk.
 #[derive(Clone)]
-pub struct Sink(Arc<Mutex<Internal>>);
+pub struct Sink<C, S>(Arc<Mutex<Persistent<proto::CarbonProto<C, S>>>>,
+                      Notifier)
+    where S: ActiveStream;
 
 /// The sender object, which has convenience methods to send the data
 ///
 /// Note ``Sender()`` holds lock on the underlying buffer and doesn't
 /// send data, until sender is dropped. This is useful for sending data in
 /// single bulk.
-pub struct Sender<'a>(MutexGuard<'a, Internal>, bool);
+pub struct Sender<'a, C: 'a, S>(
+    MutexGuard<'a, Persistent<proto::CarbonProto<C, S>>>,
+    Option<Notifier>)
+    where S: ActiveStream;
 
 /// Connect to the socket by IP address
 ///
 /// The method is here while rotor-dns is not matured yet. The better way
 /// would be to use dns resolving.
 pub fn connect_ip<S: GenericScope, C>(addr: SocketAddr, scope: &mut S)
-    -> Result<(Fsm<C>, Sink), io::Error>
+    -> Response<(Fsm<C, TcpStream>, Sink<C, TcpStream>), Void>
 {
-    let arc = Arc::new(Mutex::new(try!(Internal::new(addr, scope))));
-    Ok((Fsm(arc.clone(), PhantomData), Sink(arc)))
+    Persistent::connect(scope, addr, ()).wrap(|fsm| {
+        let arc = Arc::new(Mutex::new(fsm));
+        (Mutexed(arc.clone()), Sink(arc, scope.notifier()))
+    })
 }
 

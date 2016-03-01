@@ -1,6 +1,13 @@
+use std::fmt::Debug;
+
+use rotor_stream::ActiveStream;
+
 use {Sink, Sender};
 
-impl Sink {
+
+impl<C, S: ActiveStream> Sink<C, S>
+    where S::Address: Debug
+{
     /// Get the `Sender` object to send data
     ///
     /// Rules of thumb:
@@ -8,9 +15,10 @@ impl Sink {
     /// 1. Hold it only for sending data, not for fetching actual metrics
     /// 2. If you poll for metrics in the loop, drop the sender while doing
     ///    `sleep()`
-    pub fn sender(&self) -> Sender {
-        let data = self.0.lock().unwrap();
-        let notify = data.buffer.len() == 0;
+    pub fn sender(&self) -> Sender<C, S> {
+        let mut data = self.0.lock().unwrap();
+        let len = data.transport().map(|mut x| x.output().len()).unwrap_or(0);
+        let notify = if len == 0 { Some(self.1.clone()) } else { None };
         Sender(data, notify)
     }
 }
