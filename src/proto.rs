@@ -20,7 +20,7 @@ impl<C, S: ActiveStream> Protocol for CarbonProto<C, S> {
     fn create(_seed: (), _sock: &mut S, scope: &mut Scope<Self::Context>)
         -> Intent<Self>
     {
-        Intent::of(CarbonProto(PhantomData)).sleep()
+        Intent::of(CarbonProto(PhantomData)).expect_flush()
         .deadline(scope.now() + Duration::new(IDLE_TIMEOUT, 0))
     }
     fn bytes_read(self, _transport: &mut Transport<S>, _end: usize,
