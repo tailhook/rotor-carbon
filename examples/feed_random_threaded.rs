@@ -3,6 +3,7 @@ extern crate rotor;
 extern crate rotor_carbon;
 extern crate rotor_tools;
 extern crate rand;
+extern crate env_logger;
 
 struct Context;
 
@@ -16,6 +17,7 @@ use rotor_tools::loop_ext::LoopExt;
 
 
 fn main() {
+    env_logger::init().unwrap();
     let mut host = "127.0.0.1".to_string();
     let mut port = 2003u16;
     {

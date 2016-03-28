@@ -1,8 +1,9 @@
 use std::marker::PhantomData;
 use std::time::Duration;
+use std::error::Error;
 
 use rotor::Scope;
-use rotor_stream::{ActiveStream, Protocol, Intent, Transport};
+use rotor_stream::{ActiveStream, Protocol, Intent, Transport, Exception};
 
 
 const IDLE_TIMEOUT: u64 = 86_400;
@@ -54,5 +55,17 @@ impl<C, S: ActiveStream> Protocol for CarbonProto<C, S> {
             .deadline(scope.now() + Duration::new(IDLE_TIMEOUT, 0))
         }
     }
-
+    fn exception(self, _transport: &mut Transport<Self::Socket>,
+        reason: Exception, _scope: &mut Scope<Self::Context>)
+        -> Intent<Self>
+    {
+        info!("Connection error: {}", reason);
+        Intent::done()
+    }
+    fn fatal(self, reason: Exception, _scope: &mut Scope<Self::Context>)
+        -> Option<Box<Error>>
+    {
+        info!("Connection error: {}", reason);
+        None
+    }
 }

@@ -36,6 +36,7 @@ extern crate rotor_stream;
 extern crate rotor_tools;
 extern crate time;
 extern crate num;
+#[macro_use] extern crate log;
 
 mod sink;
 mod sender;
