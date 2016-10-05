@@ -9,7 +9,7 @@ use {Sender};
 
 impl<'a, C: 'a, S: ActiveStream> Sender<'a, C, S> {
     /// Send a generic number with current timestamp
-    pub fn add_value<N, V=i64>(&mut self, name: N, value: V)
+    pub fn add_value<N, V>(&mut self, name: N, value: V)
         where N: Display, V: Num + Display
     {
         // Unfortunately we skip everything if connection is not established
@@ -23,7 +23,7 @@ impl<'a, C: 'a, S: ActiveStream> Sender<'a, C, S> {
         });
     }
     /// Send a generic number with specific timestamp
-    pub fn add_value_at<N, V=i64>(&mut self, name: N, value: V, ts: u64)
+    pub fn add_value_at<N, V>(&mut self, name: N, value: V, ts: u64)
         where N: Display, V: Num + Display
     {
         // Unfortunately we skip everything if connection is not established
