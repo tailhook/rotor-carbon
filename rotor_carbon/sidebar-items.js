@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["connect_ip","Connect to the socket by IP address"]],"struct":[["Sender","The sender object, which has convenience methods to send the data"],["Sink","This is a wrapper around the machinery to send data"]],"type":[["Fsm","A state machine object, just add in to the loop"]]});
